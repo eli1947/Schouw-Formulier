@@ -1,0 +1,29 @@
+=== EmailJS Template instellen (eenmalig, 2 minuten) ===
+
+1. Ga naar https://emailjs.com en log in
+2. Ga naar "Email Templates" → klik "Create New Template"
+3. Geef de template de naam: infra_rapport
+4. Stel de template zo in:
+
+   Template ID:  infra_rapport
+
+   Subject:
+   {{subject}}
+
+   Body (plain text):
+   Van: Infra Schouw App
+   Project: {{project}}
+   Datum: {{datum}}
+   Inspector: {{inspector}}
+
+   ---
+
+   {{message}}
+
+5. Sla op → klaar!
+
+De app gebruikt automatisch:
+- Service ID:  service_41u8pog
+- Template ID: infra_rapport
+- Public Key:  o7pUEzueN83JuVY4P
+
