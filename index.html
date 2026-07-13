@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Projecten</title>
+<style>
+:root{--blue:#1B5FA8;--blue-dark:#134a87;--blue-light:#EBF3FD;--green:#2E7D32;--green-light:#E8F5E9;--amber:#B45309;--amber-light:#FEF3C7;--red:#C62828;--red-light:#FFEBEE;--gray-50:#F8F8F7;--gray-100:#F0F0EE;--gray-200:#E4E4E0;--gray-400:#A0A09A;--gray-600:#666660;--gray-900:#18181A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-100);color:var(--gray-900);font-size:16px;-webkit-font-smoothing:antialiased}
+
+.topbar{background:var(--blue);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(0,0,0,0.15)}
+.topbar-left h1{font-size:15px;font-weight:700;color:white;letter-spacing:-0.2px}
+.topbar-left p{font-size:11px;color:rgba(255,255,255,0.65);margin-top:1px}
+.btn-new{height:34px;padding:0 14px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:white;color:var(--blue);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:5px}
+
+.navbar{background:var(--blue-dark);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(0,0,0,0.1)}
+.navbar::-webkit-scrollbar{display:none}
+.nav-item{flex-shrink:0;padding:0 18px;height:40px;display:flex;align-items:center;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent;gap:5px}
+.nav-item.active{color:white;border-bottom-color:white;font-weight:600}
+
+.view{display:none}.view.active{display:block}
+
+/* LIST */
+.list-wrap{max-width:680px;margin:0 auto;padding:16px 14px 40px}
+.empty-state{text-align:center;padding:64px 24px;color:var(--gray-400)}
+.empty-icon{font-size:48px;margin-bottom:14px}
+.empty-state p{font-size:15px;line-height:1.6;color:var(--gray-600)}
+
+.proj-card{background:white;border-radius:14px;border:1px solid var(--gray-200);margin-bottom:10px;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:transform 0.1s}
+.proj-card:active{transform:scale(0.99)}
+.proj-header{padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.proj-color-bar{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0;min-height:40px}
+.proj-meta{flex:1;min-width:0}
+.proj-name{font-size:15px;font-weight:700;color:var(--gray-900);letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj-tags{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.fase-badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px}
+.fase-0{background:var(--gray-100);color:var(--gray-600)}
+.fase-1{background:var(--amber-light);color:var(--amber)}
+.fase-2{background:var(--blue-light);color:var(--blue)}
+.fase-3{background:#E8F5E9;color:var(--green)}
+.fase-4{background:#F3E8FF;color:#6B21A8}
+.fase-done{background:var(--green-light);color:var(--green)}
+.proj-start{font-size:11px;color:var(--gray-400);font-weight:500}
+.proj-arrow{color:var(--gray-200);font-size:20px;align-self:center;flex-shrink:0}
+.proj-prog-wrap{padding:0 16px 14px 32px}
+.prog-bar{height:4px;background:var(--gray-100);border-radius:2px;overflow:hidden}
+.prog-fill{height:4px;border-radius:2px;transition:width 0.4s}
+.prog-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--gray-400);font-weight:500}
+
+/* DETAIL */
+.detail-topbar{background:var(--blue);padding:0 16px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.back-btn{background:none;border:none;color:white;font-size:15px;font-weight:500;cursor:pointer;padding:0;display:flex;align-items:center;gap:4px;-webkit-tap-highlight-color:transparent}
+.detail-title{color:white;font-size:15px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px}
+.detail-wrap{max-width:680px;margin:0 auto;padding:16px 14px 96px}
+
+/* OVERALL PROG */
+.overall-card{background:white;border-radius:14px;border:1px solid var(--gray-200);padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.overall-card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--gray-400);margin-bottom:10px}
+.big-prog-bar{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden}
+.big-prog-fill{height:8px;border-radius:4px;background:var(--blue);transition:width 0.4s}
+.big-prog-label{font-size:14px;color:var(--gray-900);margin-top:8px;font-weight:600}
+.big-start{font-size:12px;color:var(--gray-400);margin-top:3px;font-weight:500}
+
+/* SCHOUW LINKS */
+.schouw-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.schouw-link{display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--gray-200);border-radius:12px;padding:13px 14px;text-decoration:none;color:var(--blue);font-size:13px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.05);-webkit-tap-highlight-color:transparent;transition:background 0.1s}
+.schouw-link:active{background:var(--blue-light)}
+.schouw-link-icon{font-size:22px}
+
+/* LOG */
+.log-card{background:white;border-radius:14px;border:1px solid var(--gray-200);margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.log-card-head{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--gray-100)}
+.log-icon{width:36px;height:36px;border-radius:9px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.log-title{font-size:15px;font-weight:700;flex:1;letter-spacing:-0.2px}
+.log-count{font-size:12px;color:var(--gray-400);margin-top:1px;font-weight:500}
+.log-add-btn{height:32px;padding:0 12px;border-radius:6px;background:var(--blue);color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.log-body{padding:12px 16px}
+.log-empty{font-size:13px;color:var(--gray-400);padding:4px 0;font-style:italic}
+.log-item{background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:11px 13px;margin-bottom:8px;position:relative}
+.log-item:last-child{margin-bottom:0}
+.log-date{font-size:11px;color:var(--gray-400);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px}
+.log-text{font-size:14px;color:var(--gray-900);line-height:1.5;white-space:pre-wrap;padding-right:24px}
+.log-del{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--gray-400);font-size:16px;cursor:pointer;padding:0;line-height:1}
+.log-del:active{color:var(--red)}
+
+/* FASE CARDS */
+.fase-card{background:white;border-radius:14px;border:1px solid var(--gray-200);margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.fase-head{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.fase-head:active{background:var(--gray-50)}
+.fase-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fase-name{font-size:15px;font-weight:700;flex:1;letter-spacing:-0.2px}
+.fase-stat{font-size:12px;color:var(--gray-400);margin-top:1px;font-weight:500}
+.fase-chev{color:var(--gray-200);font-size:18px;transition:transform 0.2s;flex-shrink:0}
+.fase-chev.open{transform:rotate(90deg)}
+.fase-body{display:none;padding:0 16px 16px;border-top:1px solid var(--gray-100)}
+.fase-body.open{display:block}
+
+/* TASKS */
+.task-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--gray-100)}
+.task-row:last-of-type{border:none}
+.task-check{width:24px;height:24px;border-radius:7px;border:2px solid var(--gray-200);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.15s;margin-top:1px}
+.task-check.done{background:var(--green);border-color:var(--green)}
+.task-check.done::after{content:'✓';color:white;font-size:13px;font-weight:700}
+.task-info{flex:1}
+.task-name{font-size:14px;font-weight:500;line-height:1.35;color:var(--gray-900)}
+.task-name.done{text-decoration:line-through;color:var(--gray-400)}
+.task-sub{font-size:12px;color:var(--gray-400);margin-top:3px;line-height:1.4}
+.task-block{padding:10px 0;border-bottom:1px solid var(--gray-100)}
+.task-block:last-child{border:none}
+.task-group-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--gray-400);margin-bottom:8px}
+
+/* SUBTASKS */
+.sub-list{display:flex;flex-direction:column;gap:1px}
+.sub-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-50)}
+.sub-row:last-child{border:none}
+.sub-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--gray-200);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.15s}
+.sub-check.done{background:var(--green);border-color:var(--green)}
+.sub-check.done::after{content:'✓';color:white;font-size:11px;font-weight:700}
+.sub-name{font-size:13px;color:var(--gray-600)}
+.sub-name.done{text-decoration:line-through;color:var(--gray-400)}
+.bodem-tree{margin-left:28px;margin-top:2px}
+
+/* DATE INPUT IN FASE */
+.fase-date{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:15px;font-family:inherit;-webkit-appearance:none;background:white;color:var(--gray-900);outline:none;margin-top:6px}
+.fase-date:focus{border-color:var(--blue)}
+
+/* WENS TEXTAREA */
+.wens-field{width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:15px;font-family:inherit;resize:vertical;min-height:84px;line-height:1.5;-webkit-appearance:none;background:white;color:var(--gray-900);outline:none;margin-top:6px}
+.wens-field:focus{border-color:var(--blue)}
+
+/* NOTES */
+.notes-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--gray-400);margin-top:14px;display:block;margin-bottom:6px}
+.notes-area{width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;min-height:72px;line-height:1.5;-webkit-appearance:none;background:white;color:var(--gray-900);outline:none}
+.notes-area:focus{border-color:var(--blue)}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-200);padding:12px 16px;display:flex;gap:8px;justify-content:space-between;z-index:99;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+.btn{height:44px;padding:0 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent}
+.btn:active{opacity:0.8}
+.btn-secondary{background:var(--gray-100);color:var(--gray-600)}
+.btn-danger{background:var(--red-light);color:var(--red)}
+.btn-primary{background:var(--blue);color:white}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.sheet{background:white;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:520px;box-shadow:0 -4px 24px rgba(0,0,0,0.12)}
+.sheet-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 20px}
+.sheet h2{font-size:18px;font-weight:700;margin-bottom:16px;letter-spacing:-0.3px}
+.sheet label{font-size:12px;font-weight:700;color:var(--gray-600);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.2px}
+.sheet input[type=text],.sheet input[type=date]{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:16px;font-family:inherit;-webkit-appearance:none;outline:none;margin-bottom:14px;color:var(--gray-900)}
+.sheet input:focus{border-color:var(--blue)}
+.color-picks{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.color-pick{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;-webkit-tap-highlight-color:transparent;transition:border-color 0.15s}
+.color-pick.sel{border-color:var(--gray-900)}
+.sheet-btns{display:flex;gap:8px}
+.sheet-btn{flex:1;height:48px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent}
+.sheet-btn.primary{background:var(--blue);color:white}
+.sheet-btn.secondary{background:var(--gray-100);color:var(--gray-600)}
+</style>
+<script>
+if('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com'){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/Schouw-Formulier/sw.js').catch(()=>{}));
+}
+</script>
+</head>
+<body>
+
+<!-- LIST VIEW -->
+<div class="view active" id="view-list">
+  <div class="topbar">
+    <div class="topbar-left"><h1>Projecten</h1><p id="proj-count">0 projecten</p></div>
+    <button class="btn-new" onclick="openNew()">+ Nieuw project</button>
+  </div>
+  <nav class="navbar">
+    <a class="nav-item active" href="index.html">📁 Projecten</a>
+    <a class="nav-item" href="station_schouw.html">📋 Station schouw</a>
+    <a class="nav-item" href="trace_schouw.html">📍 Tracé schouw</a>
+  </nav>
+  <div class="list-wrap">
+    <div class="empty-state" id="empty">
+      <div class="empty-icon">📋</div>
+      <p>Nog geen projecten.<br>Tik op <strong>+ Nieuw project</strong> om te beginnen.</p>
+    </div>
+    <div id="proj-list"></div>
+  </div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div class="view" id="view-detail">
+  <div class="detail-topbar">
+    <button class="back-btn" onclick="showList()">‹ Terug</button>
+    <div class="detail-title" id="detail-title"></div>
+  </div>
+  <div class="detail-wrap">
+
+    <div class="overall-card">
+      <h3>Totale voortgang</h3>
+      <div class="big-prog-bar"><div class="big-prog-fill" id="big-fill"></div></div>
+      <div class="big-prog-label" id="big-label"></div>
+      <div class="big-start" id="big-start"></div>
+    </div>
+
+    <div class="schouw-links">
+      <a class="schouw-link" id="link-station" href="station_schouw.html"><span class="schouw-link-icon">📋</span><span>Station schouw</span></a>
+      <a class="schouw-link" id="link-trace" href="trace_schouw.html"><span class="schouw-link-icon">📍</span><span>Tracé schouw</span></a>
+    </div>
+
+    <div class="log-card">
+      <div class="log-card-head">
+        <div class="log-icon">📒</div>
+        <div style="flex:1"><div class="log-title">Projectlog</div><div class="log-count" id="log-count">0 notities</div></div>
+        <button class="log-add-btn" onclick="addLog()">+ Notitie</button>
+      </div>
+      <div class="log-body"><div id="log-list"></div></div>
+    </div>
+
+    <!-- FASE 1 -->
+    <div class="fase-card">
+      <div class="fase-head" onclick="toggleFase('f1')">
+        <div class="fase-icon" style="background:#EBF3FD">💬</div>
+        <div style="flex:1"><div class="fase-name">Wens &amp; bureaustudie</div><div class="fase-stat" id="f1-status"></div></div>
+        <div class="fase-chev" id="f1-chev">›</div>
+      </div>
+      <div class="fase-body" id="f1">
+        <div class="task-block">
+          <div class="task-group-lbl">Wens opdrachtgever</div>
+          <textarea class="wens-field" id="wens-tekst" placeholder="Beschrijf de wens van de opdrachtgever..." oninput="saveWens()"></textarea>
+        </div>
+        <div class="task-row" id="t-f1-0">
+          <div class="task-check" onclick="toggleTask('f1',0)"></div>
+          <div class="task-info"><div class="task-name">Huidige infrastructuur in kaart</div><div class="task-sub">Bestaande situatie LS/OV/MS/Gas documenteren</div></div>
+        </div>
+        <div class="task-row" id="t-f1-1">
+          <div class="task-check" onclick="toggleTask('f1',1)"></div>
+          <div class="task-info"><div class="task-name">Bureaustudie compleet</div></div>
+        </div>
+        <div style="padding-left:36px">
+          <div class="sub-list">
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',0)"></div><div class="sub-name" id="sn-bs-0">Kadastrale informatie</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',1)"></div><div class="sub-name" id="sn-bs-1">Chroom-6</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',2)"></div><div class="sub-name" id="sn-bs-2">Asbest</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',3)"></div><div class="sub-name" id="sn-bs-3">Ecologie</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',4)"></div><div class="sub-name" id="sn-bs-4">Niet gesprongen explosieven</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',5)"></div><div class="sub-name" id="sn-bs-5">Waterkeringen</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',6)"></div>
+              <div style="flex:1"><div class="sub-name" id="sn-bs-6">Bodemonderzoek</div>
+                <div class="bodem-tree">
+                  <div class="sub-row"><div class="sub-check" onclick="toggleSub('bod',0)"></div><div class="sub-name" id="sn-bod-0">Historisch onderzoek</div></div>
+                  <div class="sub-row"><div class="sub-check" onclick="toggleSub('bod',1)"></div><div class="sub-name" id="sn-bod-1">Verkennend onderzoek</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',7)"></div><div class="sub-name" id="sn-bs-7">KLIC</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('bs',8)"></div><div class="sub-name" id="sn-bs-8">WoW</div></div>
+          </div>
+        </div>
+        <div class="task-block">
+          <div class="task-group-lbl">Schets ontwerp</div>
+          <div class="sub-list">
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('so',0)"></div><div class="sub-name" id="sn-so-0">Station</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('so',1)"></div><div class="sub-name" id="sn-so-1">Gas</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('so',2)"></div><div class="sub-name" id="sn-so-2">MS</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('so',3)"></div><div class="sub-name" id="sn-so-3">LS/OV</div></div>
+          </div>
+        </div>
+        <div class="task-block">
+          <div class="task-group-lbl">Was/Word schema's</div>
+          <div class="sub-list">
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('ww',0)"></div><div class="sub-name" id="sn-ww-0">LS Was/Word</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('ww',1)"></div><div class="sub-name" id="sn-ww-1">OV Was/Word</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('ww',2)"></div><div class="sub-name" id="sn-ww-2">MS Was/Word</div></div>
+          </div>
+        </div>
+        <span class="notes-lbl">Notities</span>
+        <textarea class="notes-area" id="notes-f1" placeholder="Opmerkingen, contactpersonen, links..." oninput="saveNotes('f1')"></textarea>
+      </div>
+    </div>
+
+    <!-- FASE 2 -->
+    <div class="fase-card">
+      <div class="fase-head" onclick="toggleFase('f2')">
+        <div class="fase-icon" style="background:#FEF3C7">🔍</div>
+        <div style="flex:1"><div class="fase-name">Voorschouw</div><div class="fase-stat" id="f2-status"></div></div>
+        <div class="fase-chev" id="f2-chev">›</div>
+      </div>
+      <div class="fase-body" id="f2">
+        <div class="task-row" id="t-f2-0">
+          <div class="task-check" onclick="toggleTask('f2',0)"></div>
+          <div class="task-info"><div class="task-name">Voorschouw uitgevoerd</div></div>
+        </div>
+        <div class="task-block" style="padding:8px 0">
+          <label class="notes-lbl" style="margin-top:0;margin-bottom:6px">Datum voorschouw</label>
+          <input type="date" id="date-f2" class="fase-date" onchange="saveDate('f2')">
+        </div>
+        <div class="task-block">
+          <div class="task-group-lbl">Voorlopig ontwerp</div>
+          <div class="sub-list">
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('vo',0)"></div><div class="sub-name" id="sn-vo-0">Station</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('vo',1)"></div><div class="sub-name" id="sn-vo-1">Gas</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('vo',2)"></div><div class="sub-name" id="sn-vo-2">MS</div></div>
+            <div class="sub-row"><div class="sub-check" onclick="toggleSub('vo',3)"></div><div class="sub-name" id="sn-vo-3">LS/OV</div></div>
+          </div>
+        </div>
+        <div class="task-row" id="t-f2-1" style="display:none"></div>
+        <div class="task-row">
+          <div class="task-check" onclick="toggleTask('f2',0)" style="display:none"></div>
+        </div>
+        <div class="task-row" id="tf2-vg">
+          <div class="task-check" onclick="toggleTask('f2',0)"></div>
+          <div class="task-info"><div class="task-name">V&amp;G plan opgesteld</div><div class="task-sub">Veiligheid &amp; Gezondheidsplan</div></div>
+        </div>
+        <span class="notes-lbl">Notities</span>
+        <textarea class="notes-area" id="notes-f2" placeholder="Opmerkingen..." oninput="saveNotes('f2')"></textarea>
+      </div>
+    </div>
+
+    <!-- FASE 3 -->
+    <div class="fase-card">
+      <div class="fase-head" onclick="toggleFase('f3')">
+        <div class="fase-icon" style="background:#E8F5E9">📐</div>
+        <div style="flex:1"><div class="fase-name">Fysieke schouw &amp; ontwerp</div><div class="fase-stat" id="f3-status"></div></div>
+        <div class="fase-chev" id="f3-chev">›</div>
+      </div>
+      <div class="fase-body" id="f3">
+        <div class="task-row" id="t-f3-0">
+          <div class="task-check" onclick="toggleTask('f3',0)"></div>
+          <div class="task-info"><div class="task-name">Fysieke schouw uitgevoerd</div><div class="task-sub">Schouwformulier ingevuld</div></div>
+        </div>
+        <div class="task-block" style="padding:8px 0">
+          <label class="notes-lbl" style="margin-top:0;margin-bottom:6px">Datum fysieke schouw</label>
+          <input type="date" id="date-f3" class="fase-date" onchange="saveDate('f3')">
+        </div>
+        <div class="task-row" id="t-f3-1">
+          <div class="task-check" onclick="toggleTask('f3',1)"></div>
+          <div class="task-info"><div class="task-name">Vergunningen aangevraagd &amp; verkregen</div></div>
+        </div>
+        <div class="task-row" id="t-f3-2">
+          <div class="task-check" onclick="toggleTask('f3',2)"></div>
+          <div class="task-info"><div class="task-name">Materialen besteld</div></div>
+        </div>
+        <span class="notes-lbl">Notities</span>
+        <textarea class="notes-area" id="notes-f3" placeholder="Opmerkingen..." oninput="saveNotes('f3')"></textarea>
+      </div>
+    </div>
+
+    <!-- FASE 4 -->
+    <div class="fase-card">
+      <div class="fase-head" onclick="toggleFase('f4')">
+        <div class="fase-icon" style="background:#F3E8FF">🤝</div>
+        <div style="flex:1"><div class="fase-name">Warme overdracht</div><div class="fase-stat" id="f4-status"></div></div>
+        <div class="fase-chev" id="f4-chev">›</div>
+      </div>
+      <div class="fase-body" id="f4">
+        <div class="task-row" id="t-f4-0">
+          <div class="task-check" onclick="toggleTask('f4',0)"></div>
+          <div class="task-info"><div class="task-name">Warme overdracht uitgevoerd</div><div class="task-sub">Opdrachtgever akkoord</div></div>
+        </div>
+        <div class="task-row" id="t-f4-1">
+          <div class="task-check" onclick="toggleTask('f4',1)"></div>
+          <div class="task-info"><div class="task-name">Opleverdocumentatie compleet</div></div>
+        </div>
+        <div class="task-row" id="t-f4-2">
+          <div class="task-check" onclick="toggleTask('f4',2)"></div>
+          <div class="task-info"><div class="task-name">Project afgesloten</div></div>
+        </div>
+        <span class="notes-lbl">Notities</span>
+        <textarea class="notes-area" id="notes-f4" placeholder="Opmerkingen..." oninput="saveNotes('f4')"></textarea>
+      </div>
+    </div>
+
+  </div>
+  <div class="bottom-bar">
+    <button class="btn btn-danger" onclick="deleteProject()">🗑 Verwijderen</button>
+    <button class="btn btn-primary" onclick="openEdit()">✏️ Bewerken</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="modal-title">Nieuw project</h2>
+    <label>Projectnaam</label>
+    <input type="text" id="proj-name-input" placeholder="bijv. Station Centrum Utrecht">
+    <label>Startdatum</label>
+    <input type="date" id="proj-start-input">
+    <label>Kleur</label>
+    <div class="color-picks" id="color-picks"></div>
+    <div class="sheet-btns">
+      <button class="sheet-btn secondary" onclick="closeModal()">Annuleren</button>
+      <button class="sheet-btn primary" id="modal-save-btn" onclick="saveProject()">Aanmaken</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const COLORS = ['#185FA5','#4a9a1a','#e07a10','#d03030','#7c3aed','#0891b2','#be185d','#854d0e'];
+const FASES = ['f1','f2','f3','f4'];
+const FASE_TASKS = {f1:2, f2:1, f3:3, f4:3};
+const FASE_NAMES = {f1:'Wens & Bureaustudie', f2:'Voorschouw', f3:'Fysieke schouw & Ontwerp', f4:'Warme overdracht'};
+
+// subtask group sizes
+const SUB_SIZES = {bs:9, bod:2, so:4, ww:3, vo:4};
+
+let projects = JSON.parse(localStorage.getItem('infra-projects2') || '[]');
+let currentId = null;
+let editMode = false;
+let selectedColor = COLORS[0];
+
+function renderColorPicks(selected){
+  const wrap = document.getElementById('color-picks');
+  wrap.innerHTML = '';
+  COLORS.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'color-pick' + (c === selected ? ' sel' : '');
+    d.style.background = c;
+    d.onclick = () => { selectedColor = c; renderColorPicks(c); };
+    wrap.appendChild(d);
+  });
+}
+
+function save(){ localStorage.setItem('infra-projects2', JSON.stringify(projects)); }
+function getProject(){ return projects.find(p => p.id === currentId); }
+
+function totalProgress(p){
+  let done = 0, total = 0;
+  // tasks
+  FASES.forEach(f => {
+    const n = FASE_TASKS[f];
+    for(let i=0;i<n;i++){ total++; if(p.tasks[f] && p.tasks[f][i]) done++; }
+  });
+  // subtask groups
+  Object.entries(SUB_SIZES).forEach(([g, n]) => {
+    for(let i=0;i<n;i++){ total++; if(p.subs && p.subs[g] && p.subs[g][i]) done++; }
+  });
+  return {done, total, pct: total ? Math.round(done/total*100) : 0};
+}
+
+function currentFase(p){
+  for(let fi=0; fi<FASES.length; fi++){
+    const f = FASES[fi];
+    const n = FASE_TASKS[f];
+    for(let i=0;i<n;i++){ if(!p.tasks[f] || !p.tasks[f][i]) return fi; }
+  }
+  return FASES.length;
+}
+
+function showList(){
+  document.getElementById('view-list').classList.add('active');
+  document.getElementById('view-detail').classList.remove('active');
+  renderList();
+}
+
+function renderList(){
+  const list = document.getElementById('proj-list');
+  const empty = document.getElementById('empty');
+  document.getElementById('proj-count').textContent = projects.length + ' project' + (projects.length === 1 ? '' : 'en');
+  list.innerHTML = '';
+  if(projects.length === 0){ empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  const faseLabels = ['Niet gestart','Wens & Bureaustudie','Voorschouw','Fysieke schouw','Warme overdracht','Afgerond'];
+  projects.forEach(p => {
+    const prog = totalProgress(p);
+    const fi = currentFase(p);
+    const card = document.createElement('div');
+    card.className = 'proj-card';
+    card.innerHTML = `
+      <div class="proj-header">
+        <div class="proj-color" style="background:${p.color}"></div>
+        <div style="flex:1">
+          <div class="proj-name">${p.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="fase-badge fase-${fi===FASES.length?'done':fi}">${faseLabels[fi]}</span>
+            ${p.startdate ? '<span class="proj-start">Gestart '+new Date(p.startdate).toLocaleDateString('nl-NL',{day:'2-digit',month:'short',year:'numeric'})+'</span>' : ''}
+          </div>
+        </div>
+        <div class="proj-arrow">›</div>
+      </div>
+      <div class="proj-progress-wrap">
+        <div class="prog-bar"><div class="prog-fill" style="width:${prog.pct}%;background:${p.color}"></div></div>
+        <div class="prog-label"><span>${prog.done} van ${prog.total} taken</span><span>${prog.pct}%</span></div>
+      </div>`;
+    card.onclick = () => showDetail(p.id);
+    list.appendChild(card);
+  });
+}
+
+function showDetail(id){
+  currentId = id;
+  document.getElementById('view-list').classList.remove('active');
+  document.getElementById('view-detail').classList.add('active');
+  const p2 = getProject();
+  document.getElementById('detail-title').textContent = p2.name;
+  // schouw links met projectnummer
+  const nr = encodeURIComponent(p2.name);
+  document.getElementById('link-station').href = 'station_schouw.html?proj=' + nr;
+  document.getElementById('link-trace').href = 'trace_schouw.html?proj=' + nr;
+  renderDetail();
+}
+
+function renderDetail(){
+  const p = getProject();
+  const prog = totalProgress(p);
+  document.getElementById('big-fill').style.width = prog.pct + '%';
+  document.getElementById('big-label').textContent = prog.done + ' van ' + prog.total + ' taken afgerond — ' + prog.pct + '%';
+  const startEl = document.getElementById('big-start');
+  if(startEl) startEl.textContent = p.startdate ? 'Gestart op ' + new Date(p.startdate).toLocaleDateString('nl-NL',{day:'2-digit',month:'long',year:'numeric'}) : '';
+  renderLog();
+
+  // tasks
+  FASES.forEach(f => {
+    const n = FASE_TASKS[f];
+    let done = 0;
+    for(let i=0;i<n;i++){
+      const isDone = !!(p.tasks[f] && p.tasks[f][i]);
+      if(isDone) done++;
+      const row = document.getElementById('t-'+f+'-'+i);
+      if(row){
+        row.querySelector('.task-check').classList.toggle('done', isDone);
+        row.querySelector('.task-name').classList.toggle('done', isDone);
+      }
+    }
+    const st = document.getElementById(f+'-status');
+    if(st) st.textContent = done + ' / ' + n + ' taken';
+  });
+
+  // subtask groups
+  Object.entries(SUB_SIZES).forEach(([g, n]) => {
+    for(let i=0;i<n;i++){
+      const isDone = !!(p.subs && p.subs[g] && p.subs[g][i]);
+      const nm = document.getElementById('sn-'+g+'-'+i);
+      if(nm){
+        nm.classList.toggle('done', isDone);
+        const chk = nm.previousElementSibling;
+        if(chk) chk.classList.toggle('done', isDone);
+      }
+    }
+  });
+
+  // wens
+  const wens = document.getElementById('wens-tekst');
+  if(wens) wens.value = p.wens || '';
+
+  // dates
+  FASES.forEach(f => {
+    const di = document.getElementById('date-'+f);
+    if(di) di.value = (p.dates && p.dates[f]) || '';
+  });
+
+  // notes
+  FASES.forEach(f => {
+    const ta = document.getElementById('notes-'+f);
+    if(ta) ta.value = (p.notes && p.notes[f]) || '';
+  });
+}
+
+function toggleFase(f){
+  document.getElementById(f).classList.toggle('open');
+  document.getElementById(f+'-chev').classList.toggle('open');
+}
+
+function toggleTask(fase, idx){
+  const p = getProject();
+  if(!p.tasks[fase]) p.tasks[fase] = {};
+  p.tasks[fase][idx] = !p.tasks[fase][idx];
+  save(); renderDetail(); renderList();
+}
+
+function toggleSub(group, idx){
+  const p = getProject();
+  if(!p.subs) p.subs = {};
+  if(!p.subs[group]) p.subs[group] = {};
+  p.subs[group][idx] = !p.subs[group][idx];
+  save(); renderDetail();
+}
+
+function saveWens(){
+  const p = getProject();
+  p.wens = document.getElementById('wens-tekst').value;
+  save();
+}
+
+function saveDate(fase){
+  const p = getProject();
+  if(!p.dates) p.dates = {};
+  p.dates[fase] = document.getElementById('date-'+fase).value;
+  save();
+}
+
+function saveNotes(fase){
+  const p = getProject();
+  if(!p.notes) p.notes = {};
+  p.notes[fase] = document.getElementById('notes-'+fase).value;
+  save();
+}
+
+function openNew(){
+  editMode = false;
+  selectedColor = COLORS[Math.floor(Math.random()*COLORS.length)];
+  document.getElementById('modal-title').textContent = 'Nieuw project';
+  document.getElementById('proj-name-input').value = '';
+  document.getElementById('proj-start-input').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modal-save-btn').textContent = 'Aanmaken';
+  renderColorPicks(selectedColor);
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('proj-name-input').focus(), 200);
+}
+
+function openEdit(){
+  const p = getProject();
+  editMode = true; selectedColor = p.color;
+  document.getElementById('modal-title').textContent = 'Project bewerken';
+  document.getElementById('proj-name-input').value = p.name;
+  document.getElementById('proj-start-input').value = p.startdate || '';
+  document.getElementById('modal-save-btn').textContent = 'Opslaan';
+  renderColorPicks(selectedColor);
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+function saveProject(){
+  const name = document.getElementById('proj-name-input').value.trim();
+  if(!name) return;
+  if(editMode){
+    const p = getProject(); p.name = name; p.color = selectedColor;
+    const sd2 = document.getElementById('proj-start-input').value;
+    if(sd2) p.startdate = sd2;
+    document.getElementById('detail-title').textContent = name;
+  } else {
+    const sd = document.getElementById('proj-start-input').value;
+    projects.unshift({id:Date.now().toString(), name, color:selectedColor, tasks:{}, subs:{}, notes:{}, wens:'', startdate:sd, log:[]});
+  }
+  save(); closeModal(); renderList();
+}
+
+function deleteProject(){
+  if(!confirm('Project verwijderen? Dit kan niet ongedaan worden gemaakt.')) return;
+  projects = projects.filter(p => p.id !== currentId);
+  save(); showList();
+}
+
+function addLog(){
+  const p = getProject();
+  if(!p.log) p.log = [];
+  const tekst = prompt('Notitie toevoegen:');
+  if(!tekst || !tekst.trim()) return;
+  p.log.unshift({date: new Date().toISOString(), tekst: tekst.trim()});
+  save(); renderLog();
+}
+
+function deleteLog(idx){
+  const p = getProject();
+  if(!p.log) return;
+  p.log.splice(idx,1);
+  save(); renderLog();
+}
+
+function renderLog(){
+  const p = getProject();
+  const list = document.getElementById('log-list');
+  const cnt = document.getElementById('log-count');
+  if(!list) return;
+  const logs = p.log || [];
+  cnt.textContent = logs.length + ' notitie' + (logs.length===1?'':'s');
+  if(logs.length === 0){
+    list.innerHTML = '<div style="font-size:13px;color:#aaa;padding:6px 0">Nog geen notities — tik op + Notitie</div>';
+    return;
+  }
+  list.innerHTML = logs.map((l,i) => `
+    <div class="log-item">
+      <div class="log-date">${new Date(l.date).toLocaleDateString('nl-NL',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="log-text">${l.tekst.replace(/</g,'&lt;')}</div>
+      <button class="log-del" onclick="deleteLog(${i})">×</button>
+    </div>`).join('');
+}
+
+document.getElementById('proj-name-input').addEventListener('keydown', e => { if(e.key==='Enter') saveProject(); });
+renderList();
+
+</script>
+</body>
+</html>

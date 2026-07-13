@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Station Schouw</title>
+<style>
+:root{--blue:#1B5FA8;--blue-dark:#134a87;--blue-light:#EBF3FD;--green:#2E7D32;--green-light:#E8F5E9;--amber:#B45309;--amber-light:#FEF3C7;--red:#C62828;--red-light:#FFEBEE;--gray-50:#F8F8F7;--gray-100:#F0F0EE;--gray-200:#E4E4E0;--gray-400:#A0A09A;--gray-600:#666660;--gray-900:#18181A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-100);color:var(--gray-900);font-size:16px;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{background:var(--blue);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(0,0,0,0.15)}
+.topbar-left h1{font-size:15px;font-weight:700;color:white;letter-spacing:-0.2px}
+.topbar-left p{font-size:11px;color:rgba(255,255,255,0.65);margin-top:1px}
+.topbar-actions{display:flex;gap:6px}
+.top-btn{height:34px;padding:0 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.top-btn-ghost{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25)}
+.top-btn-solid{background:white;color:var(--blue)}
+
+/* NAV */
+.navbar{background:var(--blue-dark);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;border-bottom:1px solid rgba(0,0,0,0.1)}
+.navbar::-webkit-scrollbar{display:none}
+.nav-item{flex-shrink:0;padding:0 18px;height:40px;display:flex;align-items:center;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);text-decoration:none;border-bottom:2px solid transparent;-webkit-tap-highlight-color:transparent;gap:5px;transition:color 0.1s}
+.nav-item.active{color:white;border-bottom-color:white;font-weight:600}
+
+/* PROGRESS */
+.prog-wrap{background:var(--blue-dark);padding:8px 16px 10px;display:flex;align-items:center;gap:12px}
+.prog-bar{flex:1;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden}
+.prog-fill{height:4px;background:#7EC8A4;border-radius:2px;transition:width 0.35s}
+.prog-txt{font-size:11px;color:rgba(255,255,255,0.7);white-space:nowrap;min-width:70px;text-align:right}
+
+/* LAYOUT */
+.wrap{max-width:680px;margin:0 auto;padding:16px 14px 96px}
+
+/* CARD */
+.card{background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-200);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card-head{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--gray-100)}
+.card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.card-title{font-size:15px;font-weight:700;color:var(--gray-900);letter-spacing:-0.2px}
+.card-sub{font-size:12px;color:var(--gray-400);margin-top:1px}
+.card-body{padding:16px}
+
+/* FIELDS */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:6px;letter-spacing:0.2px;text-transform:uppercase}
+.lbl.req::after{content:" *";color:var(--red);font-weight:700}
+.lbl-note{text-transform:none;font-weight:400;color:var(--gray-400);font-size:11px;letter-spacing:0}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  display:block;width:100%;padding:11px 13px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);
+  font-size:16px;font-family:inherit;color:var(--gray-900);background:white;
+  -webkit-appearance:none;appearance:none;outline:none;transition:border-color 0.15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,95,168,0.1)}
+textarea{resize:vertical;min-height:76px;line-height:1.55}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.unit-wrap{position:relative}
+.unit-wrap input{padding-right:34px}
+.unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--gray-400);pointer-events:none;font-weight:500}
+
+/* RADIO CHOICES */
+.choices{display:flex;flex-wrap:wrap;gap:7px}
+.choice{position:relative}
+.choice input[type=radio]{position:absolute;opacity:0;width:0;height:0}
+.choice label{
+  display:block;padding:9px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);
+  font-size:14px;color:var(--gray-600);cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:all 0.12s;background:white}
+.choice input[type=radio]:checked + label{font-weight:600}
+.choice.yes input[type=radio]:checked + label{background:var(--green-light);border-color:#66BB6A;color:var(--green)}
+.choice.no  input[type=radio]:checked + label{background:var(--red-light);border-color:#EF9A9A;color:var(--red)}
+.choice.na  input[type=radio]:checked + label{background:var(--gray-100);border-color:var(--gray-400);color:var(--gray-600)}
+.choice.sel input[type=radio]:checked + label{background:var(--blue-light);border-color:#90B8E8;color:var(--blue)}
+
+/* ALERTS */
+.alert{display:flex;gap:10px;padding:11px 13px;border-radius:var(--radius-md);font-size:13px;line-height:1.5;margin-top:10px;border:1px solid}
+.alert-icon{flex-shrink:0;font-size:16px;margin-top:1px}
+.alert.warn{background:var(--amber-light);border-color:#FCD34D;color:var(--amber)}
+.alert.info{background:var(--blue-light);border-color:#90B8E8;color:var(--blue)}
+.alert.danger{background:var(--red-light);border-color:#EF9A9A;color:var(--red)}
+
+/* BRANCHES */
+.branch{display:none;margin-top:12px;padding:12px 14px;background:var(--gray-50);border-radius:var(--radius-md);border:1px solid var(--gray-200)}
+.branch.open{display:block}
+.branch-lbl{font-size:12px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:10px}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--gray-100);margin:16px 0}
+
+/* PHOTO */
+.photo-label{display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px dashed var(--gray-200);border-radius:var(--radius-md);background:var(--gray-50);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all 0.15s}
+.photo-label:active{border-color:var(--blue);background:var(--blue-light)}
+.photo-label input[type=file]{display:none}
+.photo-icon{font-size:22px;flex-shrink:0}
+.photo-text{font-size:14px;color:var(--gray-600);line-height:1.4}
+.photo-text strong{color:var(--blue);display:block;font-size:12px;margin-top:2px}
+.photo-wrap{display:flex;flex-direction:column;gap:6px}
+.photo-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.photo-grid .photo-wrap{width:calc(50% - 5px)}
+.photo-item{position:relative;aspect-ratio:4/3;border-radius:var(--radius-md);overflow:hidden;background:var(--gray-100);border:1px solid var(--gray-200)}
+.photo-item img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-rm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,0.55);color:white;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.photo-caption{font-size:13px;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-family:inherit;-webkit-appearance:none;color:var(--gray-900);background:white;width:100%}
+.photo-caption:focus{border-color:var(--blue);outline:none}
+.photo-count{font-size:11px;color:var(--gray-400);margin-top:4px;font-weight:500}
+
+/* PIN */
+.pin-wrap{position:relative;border-radius:var(--radius-md);overflow:hidden;border:1.5px solid var(--gray-200);touch-action:none}
+.pin-wrap img{width:100%;display:block;-webkit-user-select:none;user-select:none}
+.pin-wrap canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+.pin-hint{font-size:12px;color:var(--gray-400);margin-top:6px}
+.pin-hint.marked{color:var(--blue);font-weight:600}
+
+/* BADGE */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:var(--blue-light);color:var(--blue);vertical-align:middle;margin-left:6px;letter-spacing:0.2px}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--gray-200);padding:12px 16px;display:flex;gap:8px;justify-content:flex-end;z-index:99;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+.btn{height:44px;padding:0 20px;border-radius:var(--radius-md);font-size:14px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s}
+.btn:active{opacity:0.8}
+.btn-secondary{background:var(--gray-100);color:var(--gray-600)}
+.btn-primary{background:var(--blue);color:white}
+.btn-success{background:var(--green);color:white}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.sheet{background:white;border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:520px;box-shadow:0 -4px 24px rgba(0,0,0,0.12)}
+.sheet-handle{width:36px;height:4px;background:var(--gray-200);border-radius:2px;margin:0 auto 20px}
+.sheet h2{font-size:18px;font-weight:700;margin-bottom:6px;letter-spacing:-0.3px}
+.sheet p{font-size:14px;color:var(--gray-600);margin-bottom:16px;line-height:1.6}
+.sheet label{font-size:12px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.2px}
+.sheet input[type=email]{width:100%;padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:16px;font-family:inherit;-webkit-appearance:none;outline:none;margin-bottom:14px}
+.sheet input:focus{border-color:var(--blue)}
+.sheet-btns{display:flex;gap:8px;margin-top:4px}
+.sheet-btn{flex:1;height:48px;border-radius:var(--radius-md);font-size:15px;font-weight:600;cursor:pointer;border:none}
+.sheet-btn.primary{background:var(--blue);color:white}
+.sheet-btn.secondary{background:var(--gray-100);color:var(--gray-600)}
+.email-status{font-size:13px;min-height:20px;margin-bottom:10px;font-weight:500}
+.steps{list-style:none;margin-bottom:20px}
+.steps li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:14px;align-items:flex-start;color:var(--gray-900)}
+.steps li:last-child{border:none}
+.step-n{background:var(--blue);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* PRINT */
+@media print{
+  .topbar,.navbar,.prog-wrap,.bottom-bar,.overlay,.photo-label,.photo-rm,.btn{display:none!important}
+  body{background:white;font-size:10pt}
+  .wrap{padding:0;max-width:100%}
+  .card{border:0.5px solid #ccc;border-radius:4px;margin-bottom:10px;padding:12px;page-break-inside:avoid;box-shadow:none}
+  .card-head{padding:8px 12px;border-bottom:0.5px solid #eee}
+  .card-body{padding:10px 12px}
+  .card-title{font-size:12pt}
+  .lbl{font-size:9pt}
+  input,select,textarea{border:none!important;padding:0!important;background:transparent!important;font-size:10pt}
+  .choices{flex-wrap:wrap}
+  .choice label{border:0.5px solid #ccc!important;font-size:9pt;padding:3px 8px!important}
+  .choice input[type=radio]:checked+label{font-weight:700!important}
+  .photo-grid{flex-wrap:wrap}
+  .photo-wrap{width:calc(50% - 5px)}
+  .branch.open{background:white;border:0.5px solid #ddd}
+  .alert{font-size:9pt}
+  h1.ph{display:block!important;font-size:16pt;font-weight:700;margin-bottom:4pt}
+  p.ps{display:block!important;font-size:10pt;color:#555;margin-bottom:12pt}
+}
+h1.ph,p.ps{display:none}
+</style>
+<script>
+if('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com'){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/Schouw-Formulier/sw.js').catch(()=>{}));
+}
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>Station Schouwformulier</h1>
+    <p>Ondergrondse infra — stationsinspectie</p>
+  </div>
+  <div class="topbar-actions">
+    <button class="top-btn top-btn-ghost" onclick="doReset()">↺ Leeg</button>
+    <button class="top-btn top-btn-solid" onclick="savePDF()">⬇ PDF</button>
+  </div>
+</div>
+
+<nav class="navbar">
+  <a class="nav-item" href="index.html">📁 Projecten</a>
+  <a class="nav-item active" href="station_schouw.html">📋 Station schouw</a>
+  <a class="nav-item" href="trace_schouw.html">📍 Tracé schouw</a>
+</nav>
+
+<div class="prog-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  <div class="prog-txt" id="prog-txt">0 / 24</div>
+</div>
+
+<div class="wrap">
+<h1 class="ph">Station Schouwformulier — Ondergrondse Infra</h1>
+<p class="ps">Ingevuld op: <span id="print-date"></span></p>
+
+<!-- ALGEMEEN -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#EBF3FD">🏢</div>
+    <div><div class="card-title">Algemeen</div><div class="card-sub">Projectgegevens &amp; locatie</div></div>
+  </div>
+  <div class="card-body">
+    <div class="row2">
+      <div class="field"><label class="lbl req" for="proj-nr">Projectnummer</label><input type="text" id="proj-nr" placeholder="2024-0123" oninput="upd()"></div>
+      <div class="field"><label class="lbl req" for="insp-date">Datum inspectie</label><input type="date" id="insp-date" onchange="upd()"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl req" for="inspector">Inspector</label><input type="text" id="inspector" placeholder="Voor- en achternaam" oninput="upd()"></div>
+      <div class="field"><label class="lbl req" for="address">Stationsadres</label><input type="text" id="address" placeholder="Straat + huisnummer" oninput="upd()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BUITENKANT -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#E8F5E9">🚪</div>
+    <div><div class="card-title">Buitenkant &amp; toegang</div><div class="card-sub">Foto's en maatvoering deuropening</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <span class="lbl req">Foto's buitenkant station</span>
+      <label class="photo-label" for="f-buiten"><input type="file" id="f-buiten" accept="image/*" multiple onchange="addPhotos(this,'g-buiten')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-buiten"></div>
+    </div>
+    <div class="field">
+      <span class="lbl req">Foto's deuropening</span>
+      <label class="photo-label" for="f-deur"><input type="file" id="f-deur" accept="image/*" multiple onchange="addPhotos(this,'g-deur')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-deur"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl req" for="deur-b">Breedte</label><div class="unit-wrap"><input type="number" id="deur-b" step="0.01" placeholder="0.00" oninput="upd()"><span class="unit">m</span></div></div>
+      <div class="field"><label class="lbl req" for="deur-h">Hoogte</label><div class="unit-wrap"><input type="number" id="deur-h" step="0.01" placeholder="0.00" oninput="upd()"><span class="unit">m</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERIEUR -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#FEF3C7">📐</div>
+    <div><div class="card-title">Interieur station</div><div class="card-sub">Afmetingen en staat van de ruimte</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <span class="lbl req">Foto's interieur</span>
+      <label class="photo-label" for="f-int"><input type="file" id="f-int" accept="image/*" multiple onchange="addPhotos(this,'g-int')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-int"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label class="lbl req" for="int-l">Lengte</label><div class="unit-wrap"><input type="number" id="int-l" step="0.01" placeholder="0.00" oninput="upd()"><span class="unit">m</span></div></div>
+      <div class="field"><label class="lbl req" for="int-b">Breedte</label><div class="unit-wrap"><input type="number" id="int-b" step="0.01" placeholder="0.00" oninput="upd()"><span class="unit">m</span></div></div>
+      <div class="field"><label class="lbl req" for="int-h">Hoogte <span class="badge">min. 2,50m</span></label><div class="unit-wrap"><input type="number" id="int-h" step="0.01" placeholder="0.00" oninput="chkH()"><span class="unit">m</span></div></div>
+    </div>
+    <div class="alert warn" id="w-h" style="display:none"><span class="alert-icon">⚠️</span><span>Hoogte onder 2,50 m — beoordeel haalbaarheid installaties.</span></div>
+    <hr class="divider">
+    <div class="field"><span class="lbl req">Vloer geschikt voor nieuwe installaties?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="vloer" id="vloer-ja" onchange="upd()"><label for="vloer-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="vloer" id="vloer-nee" onchange="upd()"><label for="vloer-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="vloer" id="vloer-nvt" onchange="upd()"><label for="vloer-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="field"><span class="lbl req">Aarding boven de grond en in heel het station?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="aarding" id="aard-ja" onchange="upd()"><label for="aard-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="aarding" id="aard-nee" onchange="upd()"><label for="aard-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="aarding" id="aard-nvt" onchange="upd()"><label for="aard-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="field"><span class="lbl req">LED-verlichting aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="led" id="led-ja" onchange="upd()"><label for="led-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="led" id="led-nee" onchange="upd()"><label for="led-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="led" id="led-nvt" onchange="upd()"><label for="led-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRAFO -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#FFEBEE">⚡</div>
+    <div><div class="card-title">Trafo</div><div class="card-sub">Type, vermogen en status</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <span class="lbl req">Foto's trafo + label</span>
+      <label class="photo-label" for="f-trafo"><input type="file" id="f-trafo" accept="image/*" multiple onchange="addPhotos(this,'g-trafo')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-trafo"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl req" for="trafo-type">Type trafo</label><input type="text" id="trafo-type" placeholder="bijv. Droog, Olie, Vacuum" oninput="upd()"></div>
+      <div class="field"><label class="lbl req" for="trafo-ver">Vermogen</label>
+        <select id="trafo-ver" onchange="upd()">
+          <option value="">Selecteer...</option>
+          <option>100 kVA</option><option>160 kVA</option><option>250 kVA</option><option>400 kVA</option>
+          <option>630 kVA</option><option>800 kVA</option><option>1000 kVA</option><option>1250 kVA</option>
+          <option>1600 kVA</option><option>Anders</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><span class="lbl req">Status kabels</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="kabels" id="kab-g" onchange="upd()"><label for="kab-g">Goed</label></div>
+        <div class="choice na"><input type="radio" name="kabels" id="kab-r" onchange="upd()"><label for="kab-r">Redelijk</label></div>
+        <div class="choice no"><input type="radio" name="kabels" id="kab-s" onchange="upd()"><label for="kab-s">Slecht</label></div>
+      </div>
+    </div>
+    <div class="field"><label class="lbl" for="kabels-opm">Opmerkingen kabels</label><textarea id="kabels-opm" placeholder="Afwijkingen, slijtage of routeproblemen..."></textarea></div>
+  </div>
+</div>
+
+<!-- RMU -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#E8F5E9">🔌</div>
+    <div><div class="card-title">RMU</div><div class="card-sub">Ring Main Unit</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <span class="lbl req">Foto's RMU</span>
+      <label class="photo-label" for="f-rmu"><input type="file" id="f-rmu" accept="image/*" multiple onchange="addPhotos(this,'g-rmu')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-rmu"></div>
+    </div>
+    <div class="field"><label class="lbl req" for="rmu-type">Type RMU</label><input type="text" id="rmu-type" placeholder="bijv. Schneider SM6 MDN, ABB SafeRing MD4" oninput="upd()"></div>
+    <div class="field"><span class="lbl req">Eindsluitingen vettig? <span class="lbl-note">(alleen bij Magnefix)</span></span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="vet" id="vet-ja" onchange="togA('w-vet',true);upd()"><label for="vet-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="vet" id="vet-nee" onchange="togA('w-vet',false);upd()"><label for="vet-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="vet" id="vet-nvt" onchange="togA('w-vet',false);upd()"><label for="vet-nvt">N.v.t.</label></div>
+      </div>
+      <div class="alert warn" id="w-vet" style="display:none"><span class="alert-icon">⚠️</span><span>Vettige eindsluitingen vereisen reiniging voor ingebruikname.</span></div>
+    </div>
+    <div class="field"><span class="lbl req">Status RMU</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="rmu-st" id="rst-g" onchange="upd()"><label for="rst-g">Goed</label></div>
+        <div class="choice na"><input type="radio" name="rmu-st" id="rst-r" onchange="upd()"><label for="rst-r">Redelijk</label></div>
+        <div class="choice no"><input type="radio" name="rmu-st" id="rst-s" onchange="upd()"><label for="rst-s">Slecht</label></div>
+      </div>
+    </div>
+    <div class="field"><span class="lbl req">Aantal richtingen</span>
+      <div class="choices">
+        <div class="choice sel"><input type="radio" name="richt" id="r2" value="2R" onchange="togA('i-da',false);upd()"><label for="r2">2R</label></div>
+        <div class="choice sel"><input type="radio" name="richt" id="r3" value="3R" onchange="togA('i-da',true);upd()"><label for="r3">3R</label></div>
+        <div class="choice sel"><input type="radio" name="richt" id="r4" value="4R" onchange="togA('i-da',true);upd()"><label for="r4">4R</label></div>
+        <div class="choice sel"><input type="radio" name="richt" id="r4p" value=">4R" onchange="togA('i-da',true);upd()"><label for="r4p">&gt;4R</label></div>
+      </div>
+      <div class="alert info" id="i-da" style="display:none"><span class="alert-icon">ℹ️</span><span>Meer dan 2 richtingen — <strong>DA meestellen in de bestelling.</strong></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- LS REK -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#EDE7F6">🖥️</div>
+    <div><div class="card-title">LS Rek</div><div class="card-sub">Laagspanningsrek en velden</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field">
+      <span class="lbl req">Foto's LS Rek</span>
+      <label class="photo-label" for="f-ls"><input type="file" id="f-ls" accept="image/*" multiple onchange="addPhotos(this,'g-ls')"><span class="photo-icon">📷</span><div class="photo-text">Tik om foto's toe te voegen<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-ls"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl req" for="ls-type">Type rek</label><input type="text" id="ls-type" placeholder="bijv. Eaton, Hager" oninput="upd()"></div>
+      <div class="field"><label class="lbl req" for="ls-velden">Velden in gebruik</label><input type="number" id="ls-velden" min="0" placeholder="0" oninput="upd()"></div>
+    </div>
+    <div class="field"><span class="lbl req">OV aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="ov" id="ov-ja" onchange="togB('br-ov',true);upd()"><label for="ov-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="ov" id="ov-nee" onchange="togB('br-ov',false);upd()"><label for="ov-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="ov" id="ov-nvt" onchange="togB('br-ov',false);upd()"><label for="ov-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="branch" id="br-ov">
+      <div class="branch-lbl">↳ OV aanwezig</div>
+      <label class="photo-label" for="f-ov"><input type="file" id="f-ov" accept="image/*" multiple onchange="addPhotos(this,'g-ov')"><span class="photo-icon">📷</span><div class="photo-text">Foto's OV Rek<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-ov"></div>
+    </div>
+    <div class="field"><span class="lbl req">DALI aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="dali" id="dali-ja" onchange="togB('br-dali',true);upd()"><label for="dali-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="dali" id="dali-nee" onchange="togB('br-dali',false);upd()"><label for="dali-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="dali" id="dali-nvt" onchange="togB('br-dali',false);upd()"><label for="dali-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="branch" id="br-dali">
+      <div class="branch-lbl">↳ DALI aanwezig</div>
+      <div class="field"><span class="lbl req">Alle velden voorzien van metingen?</span>
+        <div class="choices">
+          <div class="choice yes"><input type="radio" name="dali-m" id="dm-ja" onchange="togB('br-dali-miss',false);upd()"><label for="dm-ja">Ja</label></div>
+          <div class="choice no"><input type="radio" name="dali-m" id="dm-nee" onchange="togB('br-dali-miss',true);upd()"><label for="dm-nee">Nee</label></div>
+        </div>
+      </div>
+      <div class="branch" id="br-dali-miss">
+        <div class="branch-lbl">↳ Missende velden</div>
+        <textarea id="dali-miss" placeholder="bijv. veld 3, veld 7..."></textarea>
+      </div>
+    </div>
+    <div class="field"><span class="lbl req">Deurcontact aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="deurc" id="dc-ja" onchange="upd()"><label for="dc-ja">Ja</label></div>
+        <div class="choice no"><input type="radio" name="deurc" id="dc-nee" onchange="upd()"><label for="dc-nee">Nee</label></div>
+        <div class="choice na"><input type="radio" name="deurc" id="dc-nvt" onchange="upd()"><label for="dc-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LUIKEN -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:#FEF3C7">🔲</div>
+    <div><div class="card-title">Luiken</div><div class="card-sub">NSA luik en explosieluik</div></div>
+  </div>
+  <div class="card-body">
+    <div class="field"><span class="lbl req">NSA luik aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="nsa" id="nsa-ja" onchange="togB('br-nsa-ja',true);togB('br-nsa-nee',false);upd()"><label for="nsa-ja">Ja, aanwezig</label></div>
+        <div class="choice no"><input type="radio" name="nsa" id="nsa-nee" onchange="togB('br-nsa-nee',true);togB('br-nsa-ja',false);upd()"><label for="nsa-nee">Nee, nodig</label></div>
+        <div class="choice na"><input type="radio" name="nsa" id="nsa-nvt" onchange="togB('br-nsa-ja',false);togB('br-nsa-nee',false);upd()"><label for="nsa-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="branch" id="br-nsa-ja">
+      <div class="branch-lbl">↳ NSA luik aanwezig</div>
+      <label class="photo-label" for="f-nsa"><input type="file" id="f-nsa" accept="image/*" multiple onchange="addPhotos(this,'g-nsa')"><span class="photo-icon">📷</span><div class="photo-text">Foto's bestaand NSA luik<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-nsa"></div>
+    </div>
+    <div class="branch" id="br-nsa-nee">
+      <div class="branch-lbl">↳ NSA luik nodig — markeer de locatie</div>
+      <div class="alert info" style="display:flex;margin-bottom:12px"><span class="alert-icon">💡</span><span>Plaatsen bij voorkeur <strong>zo dicht mogelijk bij het LS-rek</strong>.</span></div>
+      <label class="photo-label" id="nsa-uplbl" for="f-nsa-pin"><input type="file" id="f-nsa-pin" accept="image/*" onchange="loadPin(this,'nsa')"><span class="photo-icon">📷</span><div class="photo-text">Foto van de beoogde plek<strong>Tik daarna op de foto voor de exacte locatie</strong></div></label>
+      <div id="nsa-pin-area" style="display:none;margin-top:10px">
+        <span class="lbl">Tik op de foto om de locatie te markeren</span>
+        <div class="pin-wrap"><img id="nsa-img"><canvas id="nsa-c"></canvas></div>
+        <div class="pin-hint" id="nsa-hint">📍 Nog geen locatie — tik op de foto</div>
+        <div class="field" style="margin-top:10px"><label class="lbl" for="nsa-opm">Toelichting</label><textarea id="nsa-opm" placeholder="bijv. linkerwand naast LS-rek..."></textarea></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field"><span class="lbl req">Explosieluik aanwezig?</span>
+      <div class="choices">
+        <div class="choice yes"><input type="radio" name="plof" id="plof-ja" onchange="togB('br-plof-ja',true);togB('br-plof-nee',false);upd()"><label for="plof-ja">Ja, aanwezig</label></div>
+        <div class="choice no"><input type="radio" name="plof" id="plof-nee" onchange="togB('br-plof-nee',true);togB('br-plof-ja',false);upd()"><label for="plof-nee">Nee, nodig</label></div>
+        <div class="choice na"><input type="radio" name="plof" id="plof-nvt" onchange="togB('br-plof-ja',false);togB('br-plof-nee',false);upd()"><label for="plof-nvt">N.v.t.</label></div>
+      </div>
+    </div>
+    <div class="branch" id="br-plof-ja">
+      <div class="branch-lbl">↳ Explosieluik aanwezig</div>
+      <label class="photo-label" for="f-plof"><input type="file" id="f-plof" accept="image/*" multiple onchange="addPhotos(this,'g-plof')"><span class="photo-icon">📷</span><div class="photo-text">Foto's bestaand explosieluik<strong>Meerdere foto's mogelijk</strong></div></label>
+      <div class="photo-grid" id="g-plof"></div>
+    </div>
+    <div class="branch" id="br-plof-nee">
+      <div class="branch-lbl">↳ Explosieluik nodig — markeer de locatie</div>
+      <div class="alert danger" style="display:flex;margin-bottom:12px"><span class="alert-icon">⚠️</span><div><strong>Veiligheidseisen:</strong><br>• Boven ooghoogte (min. ~2,10 m)<br>• Niet op een plek waar iemand geraakt kan worden</div></div>
+      <label class="photo-label" id="plof-uplbl" for="f-plof-pin"><input type="file" id="f-plof-pin" accept="image/*" onchange="loadPin(this,'plof')"><span class="photo-icon">📷</span><div class="photo-text">Foto van de beoogde plek<strong>Tik daarna op de foto voor de exacte locatie</strong></div></label>
+      <div id="plof-pin-area" style="display:none;margin-top:10px">
+        <span class="lbl">Tik op de foto om de locatie te markeren</span>
+        <div class="pin-wrap"><img id="plof-img"><canvas id="plof-c"></canvas></div>
+        <div class="pin-hint" id="plof-hint">📍 Nog geen locatie — tik op de foto</div>
+        <div class="field" style="margin-top:10px"><label class="lbl" for="plof-opm">Toelichting</label><textarea id="plof-opm" placeholder="bijv. bovenwand links, op 2,20m..."></textarea></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPMERKINGEN -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-icon" style="background:var(--gray-100)">📝</div>
+    <div><div class="card-title">Aanvullende opmerkingen</div></div>
+  </div>
+  <div class="card-body">
+    <textarea id="opmerkingen" placeholder="Overige bevindingen, bijzonderheden of aandachtspunten..." style="min-height:100px;width:100%"></textarea>
+  </div>
+</div>
+</div>
+
+<div class="bottom-bar">
+  <button class="btn btn-secondary" onclick="doReset()">↺ Leegmaken</button>
+  <button class="btn btn-success" onclick="openEmailModal()">📧 Mailen</button>
+  <button class="btn btn-primary" onclick="savePDF()">⬇ PDF</button>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="overlay" id="email-modal" onclick="if(event.target===this)closeEmailModal()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Rapport versturen</h2>
+    <p>Het ingevulde formulier wordt verstuurd naar het opgegeven emailadres.</p>
+    <label>Emailadres</label>
+    <input type="email" id="email-to" placeholder="naam@bedrijf.nl">
+    <div class="email-status" id="email-status"></div>
+    <div class="sheet-btns">
+      <button class="sheet-btn secondary" onclick="closeEmailModal()">Annuleren</button>
+      <button class="sheet-btn primary" id="email-send-btn" onclick="sendEmail()">Versturen</button>
+    </div>
+  </div>
+</div>
+
+<!-- IOS PDF MODAL -->
+<div class="overlay" id="ios-modal" onclick="if(event.target===this)closeM()">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>PDF opslaan op iPhone</h2>
+    <p>Safari heeft geen directe PDF-export. Volg deze stappen:</p>
+    <ol class="steps">
+      <li><span class="step-n">1</span>Tik op het <strong>Deel-icoon</strong> onderaan Safari</li>
+      <li><span class="step-n">2</span>Tik op <strong>"Druk af"</strong></li>
+      <li><span class="step-n">3</span>Knijp met twee vingers op de voorvertoning</li>
+      <li><span class="step-n">4</span>Tik op <strong>Deel → Sla op in Bestanden</strong></li>
+    </ol>
+    <button class="sheet-btn primary" onclick="closeM();window.print()">Begrepen — open afdrukscherm</button>
+  </div>
+</div>
+
+<script>
+const F=['proj-nr','insp-date','inspector','address','deur-b','deur-h','int-l','int-b','int-h','trafo-type','trafo-ver','rmu-type','ls-type','ls-velden'];
+const R=['vloer','aarding','led','kabels','vet','rmu-st','richt','ov','dali','deurc'];
+function upd(){
+  let d=0,t=F.length+R.length;
+  F.forEach(id=>{const e=document.getElementById(id);if(e&&e.value.trim())d++;});
+  R.forEach(n=>{if(document.querySelector('input[name="'+n+'"]:checked'))d++;});
+  const pct=Math.round(d/t*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-txt').textContent=d+' / '+t+' ('+pct+'%)';
+}
+function togA(id,show){const e=document.getElementById(id);if(e)e.style.display=show?'flex':'none';}
+function togB(id,show){const e=document.getElementById(id);if(e)e.classList.toggle('open',show);}
+function chkH(){const v=parseFloat(document.getElementById('int-h').value);togA('w-h',!isNaN(v)&&v<2.5);upd();}
+
+function addPhotos(input,gridId){
+  const grid=document.getElementById(gridId);
+  const files=Array.from(input.files);
+  let i=0;
+  function next(){
+    if(i>=files.length){input.value='';upd();scheduleAutosave();return;}
+    const f=files[i++];
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const wrap=document.createElement('div');wrap.className='photo-wrap';
+      const item=document.createElement('div');item.className='photo-item';
+      const img=document.createElement('img');img.src=e.target.result;
+      const rm=document.createElement('button');rm.className='photo-rm';rm.textContent='×';rm.type='button';
+      rm.onclick=function(){wrap.remove();updCount(grid);scheduleAutosave();};
+      item.append(img,rm);
+      const cap=document.createElement('input');cap.type='text';cap.className='photo-caption';cap.placeholder='Bijschrift foto...';
+      cap.oninput=scheduleAutosave;
+      wrap.append(item,cap);
+      grid.appendChild(wrap);
+      updCount(grid);next();
+    };
+    reader.onerror=()=>next();
+    reader.readAsDataURL(f);
+  }
+  next();
+}
+function updCount(grid){
+  const n=grid.querySelectorAll('.photo-wrap').length;
+  let c=grid.nextElementSibling;
+  if(c&&c.className==='photo-count')c.remove();
+  if(n>0){const el=document.createElement('div');el.className='photo-count';el.textContent=n+" foto"+(n===1?"":"'s")+" toegevoegd";grid.after(el);}
+}
+
+const pins={};
+function loadPin(input,key){
+  const f=input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const img=document.getElementById(key+'-img');
+    img.onload=function(){
+      const c=document.getElementById(key+'-c');
+      c.width=img.naturalWidth;c.height=img.naturalHeight;
+      document.getElementById(key+'-pin-area').style.display='block';
+      document.getElementById(key+'-uplbl').style.display='none';
+      setupPin(key);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+function setupPin(key){
+  const c=document.getElementById(key+'-c');
+  const hint=document.getElementById(key+'-hint');
+  function place(e){
+    e.preventDefault();e.stopPropagation();
+    const r=c.getBoundingClientRect();
+    const sx=c.width/r.width,sy=c.height/r.height;
+    const src=e.changedTouches?e.changedTouches[0]:e;
+    const x=(src.clientX-r.left)*sx,y=(src.clientY-r.top)*sy;
+    pins[key]={x,y};drawPin(key,x,y);
+    hint.textContent='📍 Locatie gemarkeerd — tik elders om te verplaatsen';
+    hint.className='pin-hint marked';
+    scheduleAutosave();
+  }
+  c.addEventListener('touchend',place,{passive:false});
+  c.addEventListener('click',place);
+}
+function drawPin(key,x,y){
+  const c=document.getElementById(key+'-c');
+  const ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const r=Math.max(c.width,c.height)*0.032;
+  ctx.beginPath();ctx.arc(x,y,r*1.8,0,Math.PI*2);ctx.fillStyle='rgba(27,95,168,0.18)';ctx.fill();
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle='#C62828';ctx.fill();
+  ctx.strokeStyle='white';ctx.lineWidth=r*0.3;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x-r*.45,y);ctx.lineTo(x+r*.45,y);ctx.moveTo(x,y-r*.45);ctx.lineTo(x,y+r*.45);
+  ctx.strokeStyle='white';ctx.lineWidth=r*0.18;ctx.stroke();
+}
+
+function isIOS(){return /iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
+function savePDF(){
+  document.getElementById('print-date').textContent=new Date().toLocaleDateString('nl-NL',{day:'2-digit',month:'long',year:'numeric'});
+  if(isIOS()){document.getElementById('ios-modal').classList.add('open');}else{window.print();}
+}
+function closeM(){document.getElementById('ios-modal').classList.remove('open');}
+
+function doReset(){
+  if(!confirm('Formulier leegmaken? Alle gegevens en foto\'s gaan verloren.'))return;
+  document.querySelectorAll('input[type=text],input[type=number],input[type=date],select,textarea').forEach(e=>e.value='');
+  document.querySelectorAll('input[type=radio]').forEach(e=>e.checked=false);
+  document.querySelectorAll('.photo-grid').forEach(g=>g.innerHTML='');
+  document.querySelectorAll('.photo-count').forEach(c=>c.remove());
+  document.querySelectorAll('.branch').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.alert').forEach(a=>{if(a.id)a.style.display='none';});
+  ['nsa','plof'].forEach(k=>{
+    const area=document.getElementById(k+'-pin-area');
+    const lbl=document.getElementById(k+'-uplbl');
+    if(area)area.style.display='none';
+    if(lbl)lbl.style.display='flex';
+    pins[k]=null;
+    const c=document.getElementById(k+'-c');
+    if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);
+  });
+  togA('w-h',false);togA('w-vet',false);togA('i-da',false);
+  clearAutosave();
+  upd();
+}
+
+// ─── AUTOSAVE ────────────────────────────────────────────────────────────────
+const AUTOSAVE_KEY = 'infra-autosave-station';
+let autosaveTimer = null;
+
+function collectFormState(){
+  const state = {text:{}, radio:{}, photos:{}, pins:{}};
+  document.querySelectorAll('input[type=text],input[type=number],input[type=date],select,textarea').forEach(el=>{
+    if(el.id) state.text[el.id] = el.value;
+  });
+  document.querySelectorAll('input[type=radio]:checked').forEach(el=>{
+    state.radio[el.name] = el.id;
+  });
+  document.querySelectorAll('.photo-grid').forEach(grid=>{
+    const items = [];
+    grid.querySelectorAll('.photo-wrap').forEach(w=>{
+      const img = w.querySelector('img');
+      const cap = w.querySelector('.photo-caption');
+      items.push({src: img ? img.src : '', caption: cap ? cap.value : ''});
+    });
+    state.photos[grid.id] = items;
+  });
+  ['nsa','plof'].forEach(k=>{
+    const img = document.getElementById(k+'-img');
+    if(img && img.src && img.src.startsWith('data:')){
+      state.pins[k] = {src: img.src, pin: pins[k] || null};
+    }
+  });
+  return state;
+}
+
+function scheduleAutosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(doAutosave, 800);
+}
+
+function doAutosave(){
+  try{
+    const state = collectFormState();
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+    showSaveIndicator();
+  }catch(e){ /* storage full or blocked, silently skip */ }
+}
+
+function showSaveIndicator(){
+  let el = document.getElementById('save-indicator');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'save-indicator';
+    el.style.cssText = 'position:fixed;top:56px;right:12px;background:rgba(46,125,50,0.95);color:white;font-size:11px;font-weight:600;padding:5px 10px;border-radius:100px;z-index:150;opacity:0;transition:opacity 0.3s;pointer-events:none';
+    el.textContent = '✓ Opgeslagen';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = '1';
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(()=>{ el.style.opacity = '0'; }, 1200);
+}
+
+function restoreFormState(){
+  const raw = localStorage.getItem(AUTOSAVE_KEY);
+  if(!raw) return false;
+  let state;
+  try{ state = JSON.parse(raw); }catch(e){ return false; }
+
+  Object.entries(state.text||{}).forEach(([id,val])=>{
+    const el = document.getElementById(id);
+    if(el && val) el.value = val;
+  });
+  Object.entries(state.radio||{}).forEach(([name,id])=>{
+    const el = document.getElementById(id);
+    if(el){ el.checked = true; el.dispatchEvent(new Event('change')); }
+  });
+  Object.entries(state.photos||{}).forEach(([gridId,items])=>{
+    const grid = document.getElementById(gridId);
+    if(!grid || !items.length) return;
+    items.forEach(item=>{
+      const wrap=document.createElement('div');wrap.className='photo-wrap';
+      const el=document.createElement('div');el.className='photo-item';
+      const img=document.createElement('img');img.src=item.src;
+      const rm=document.createElement('button');rm.className='photo-rm';rm.textContent='×';rm.type='button';
+      rm.onclick=function(){wrap.remove();updCount(grid);scheduleAutosave();};
+      el.append(img,rm);
+      const cap=document.createElement('input');cap.type='text';cap.className='photo-caption';cap.placeholder='Bijschrift foto...';cap.value=item.caption||'';
+      cap.oninput=scheduleAutosave;
+      wrap.append(el,cap);
+      grid.appendChild(wrap);
+    });
+    updCount(grid);
+  });
+  Object.entries(state.pins||{}).forEach(([key,data])=>{
+    if(!data || !data.src) return;
+    const img = document.getElementById(key+'-img');
+    if(!img) return;
+    img.onload = function(){
+      const c = document.getElementById(key+'-c');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      document.getElementById(key+'-pin-area').style.display='block';
+      document.getElementById(key+'-uplbl').style.display='none';
+      setupPin(key);
+      if(data.pin){
+        pins[key] = data.pin;
+        drawPin(key, data.pin.x, data.pin.y);
+        const hint = document.getElementById(key+'-hint');
+        if(hint){ hint.textContent='📍 Locatie gemarkeerd — tik elders om te verplaatsen'; hint.className='pin-hint marked'; }
+      }
+    };
+    img.src = data.src;
+  });
+
+  return true;
+}
+
+function clearAutosave(){
+  localStorage.removeItem(AUTOSAVE_KEY);
+}
+
+// Hook autosave into every input/change on the form
+document.addEventListener('input', e=>{
+  if(e.target.closest('.wrap')) scheduleAutosave();
+});
+document.addEventListener('change', e=>{
+  if(e.target.closest('.wrap')) scheduleAutosave();
+});
+// ─── EINDE AUTOSAVE ──────────────────────────────────────────────────────────
+
+// Auto datum + URL param
+document.getElementById('insp-date').value=new Date().toISOString().split('T')[0];
+const urlP=new URLSearchParams(window.location.search);
+if(urlP.get('proj'))document.getElementById('proj-nr').value=urlP.get('proj');
+
+// Restore autosaved state (overwrites defaults above if present)
+const restored = restoreFormState();
+upd();
+if(restored){
+  setTimeout(()=>{
+    const banner = document.createElement('div');
+    banner.style.cssText='position:fixed;top:96px;left:12px;right:12px;background:#EBF3FD;border:1px solid #90B8E8;color:#1B5FA8;font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;z-index:150;box-shadow:0 2px 8px rgba(0,0,0,0.1)';
+    banner.textContent='↺ Eerder ingevulde gegevens hersteld';
+    document.body.appendChild(banner);
+    setTimeout(()=>banner.remove(), 3000);
+  }, 300);
+}
+
+// EmailJS
+(function(){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';s.onload=()=>emailjs.init('o7pUEzueN83JuVY4P');document.head.appendChild(s);})();
+function openEmailModal(){document.getElementById('email-to').value=localStorage.getItem('infra-email')||'';document.getElementById('email-status').textContent='';document.getElementById('email-modal').classList.add('open');}
+function closeEmailModal(){document.getElementById('email-modal').classList.remove('open');}
+function setEmailStatus(msg,color){const el=document.getElementById('email-status');el.textContent=msg;el.style.color=color||'#555';}
+function buildBody(){
+  const g=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
+  const rg=n=>{const e=document.querySelector('input[name="'+n+'"]:checked');return e?e.value:'—';};
+  return ['=== STATION SCHOUWFORMULIER ===','','Projectnummer: '+g('proj-nr'),'Datum: '+g('insp-date'),'Inspector: '+g('inspector'),'Adres: '+g('address'),'','--- INTERIEUR ---','Lengte: '+g('int-l')+' m','Breedte: '+g('int-b')+' m','Hoogte: '+g('int-h')+' m','Vloer geschikt: '+rg('vloer'),'Aarding: '+rg('aarding'),'LED: '+rg('led'),'','--- TRAFO ---','Type: '+g('trafo-type'),'Vermogen: '+g('trafo-ver'),'Status kabels: '+rg('kabels'),'Opmerkingen: '+g('kabels-opm'),'','--- RMU ---','Type: '+g('rmu-type'),'Eindsluitingen vettig: '+rg('vet'),'Status: '+rg('rmu-st'),'Richtingen: '+rg('richt'),'','--- LS REK ---','Type: '+g('ls-type'),'Velden: '+g('ls-velden'),'OV: '+rg('ov'),'DALI: '+rg('dali'),'Deurcontact: '+rg('deurc'),'','--- LUIKEN ---','NSA: '+rg('nsa'),'NSA locatie: '+g('nsa-opm'),'Explosieluik: '+rg('plof'),'Explosieluik locatie: '+g('plof-opm'),'','--- OPMERKINGEN ---',g('opmerkingen')].join('\n');
+}
+async function sendEmail(){
+  const to=document.getElementById('email-to').value.trim();
+  if(!to){setEmailStatus('Vul een emailadres in.','#C62828');return;}
+  localStorage.setItem('infra-email',to);
+  const btn=document.getElementById('email-send-btn');
+  btn.textContent='Versturen...';btn.disabled=true;
+  setEmailStatus('Bezig...','#1B5FA8');
+  try{
+    await emailjs.send('service_41u8pog','infra_rapport',{to_email:to,subject:'Station Schouwrapport — '+(document.getElementById('proj-nr').value||'onbekend'),message:buildBody(),project:document.getElementById('proj-nr').value||'—',datum:document.getElementById('insp-date').value||'—',inspector:document.getElementById('inspector').value||'—'});
+    setEmailStatus('✓ Verstuurd naar '+to,'#2E7D32');
+    setTimeout(closeEmailModal,2000);
+  }catch(e){setEmailStatus('Versturen mislukt. Controleer je verbinding.','#C62828');}
+  btn.textContent='Versturen';btn.disabled=false;
+}
+</script>
+</body>
+</html>
